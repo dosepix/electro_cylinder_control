@@ -23,12 +23,14 @@ class CylinderControl():
         """Set position in percent. If wait is true,
         function waits until desired position is reached
         """
-        if position > 100:
+        position_percent = cm_in_percent(position)
+
+        if position_percent > 100:
             raise ValueError("Position must not exceed 100%!")
-        if position < 0:
+        if position_percent < 0:
             raise ValueError("Position must be greater than 0%!")
 
-        self.ser.write("Z=%.1f\n" % position)
+        self.ser.write(("Z=%.1f\n" % position_percent).encode())
         # Wait until position is reached
         if wait:
             while self.ser.in_waiting <= 0:
@@ -43,12 +45,15 @@ class CylinderControl():
     def get_position(self):
         """Get current position of the cylinder in percent"""
         print( self.ser.isOpen() )
-        self.ser.write("GET\n")
+        self.ser.write(("GET\n").encode())
 
         while self.ser.in_waiting <= 0:
             pass
 
-        return self.ser.readline()[:-2]
+        percent_value = self.ser.readline()[:-2]
+        cm_value = percent_in_cm(float(percent_value))
+
+        return cm_value
 
     # = Connect & Disconnect =
     def connect(self):
@@ -85,3 +90,9 @@ def find_port():
             continue
         return port.device
     return None
+
+def percent_in_cm(position_percent):
+    return position_percent/100*29.8+2.3
+
+def cm_in_percent(position_cm):
+    return (position_cm-2.3)/29.8*100
