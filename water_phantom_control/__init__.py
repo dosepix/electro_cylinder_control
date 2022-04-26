@@ -1,7 +1,9 @@
+"""Module to control the axes of the water phantom"""
 from . import cylinder_control
 from . import motor_control
 
 class WaterPhantomControl():
+    """Class to control the axes"""
     def __init__(self,
         cylinder_port,
         use_cylinder=True
@@ -26,6 +28,9 @@ class WaterPhantomControl():
         self.position_reached()
 
     def move_to_coords_cm(self, x_pos, y_pos, z_pos, block=True):
+        """Move axes to coordinates in cm. If block is True,
+        execution halts until positions are reached
+        """
         self.mc.move_to_cm(x_pos, top=True)
         self.mc.move_to_cm(y_pos, top=False)
         if self.use_cylinder:
@@ -36,6 +41,7 @@ class WaterPhantomControl():
                 pass
 
     def position_reached(self):
+        """Check if axes reached their positions"""
         pos_reached_mc =  self.mc.position_reached()
         if self.use_cylinder:
             pos_reached_cyl = self.cc.position_reached()

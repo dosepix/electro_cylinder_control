@@ -1,3 +1,7 @@
+"""Class to control the electric cylinder,
+connected to an Arduino via a motor shield,
+connected via USB to the PC. Commands are
+sent and received via USB-serial"""
 import time
 import serial
 from serial.tools import list_ports
@@ -6,6 +10,9 @@ from serial.tools import list_ports
 VID = '2341:0043'   # Vendor id
 
 class CylinderControl():
+    """Establish connection, initialize position,
+    move to position
+    """
     def __init__(
         self,
         port,
@@ -59,6 +66,9 @@ class CylinderControl():
         return float( percent_value.decode() )
 
     def position_reached(self):
+        """Check if the cylinder reached its final position,
+        i.e., if it is not moving
+        """
         self.ser.write("REACHED\n".encode())
         if self.ser.in_waiting <= 0:
             return False
@@ -72,14 +82,17 @@ class CylinderControl():
 
     @classmethod
     def percent_to_cm(cls, position_percent):
+        """Transform percent to cm"""
         return position_percent / 100 * 29.8 + 2.3
 
     @classmethod
     def cm_to_percent(cls, position_cm):
+        """Transform cm to percent"""
         return (position_cm - 2.3) / 29.8 * 100
 
     # = Connect & Disconnect =
     def connect(self):
+        """Establish connection"""
         if self.ser is None:
             self.ser = serial.Serial(
                 self.port,
@@ -89,6 +102,7 @@ class CylinderControl():
                 'Connection could not be established'
 
     def disconnect(self):
+        """Disconnect Arduino"""
         if self.ser is None:
             return
 
@@ -96,6 +110,7 @@ class CylinderControl():
         self.ser = None
 
     def __del__(self):
+        """Destructor"""
         self.disconnect()
 
 def find_port():

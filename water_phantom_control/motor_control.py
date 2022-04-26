@@ -1,9 +1,17 @@
+"""Class to control the stepper motors, resembling the
+horizontal axes of the water phantom. The motors are
+connected to the TMCM-6110 PCB that is connected via USB
+to the PC
+"""
 import time
 import pytrinamic
 from pytrinamic.connections import ConnectionManager
 from pytrinamic.modules import TMCM6110
 
 class MotorControl():
+    """Establish connection, initialize position,
+    move to position
+    """
     def __init__(self):
         connectionManager = ConnectionManager()
         self.interface = connectionManager.connect()
@@ -23,6 +31,7 @@ class MotorControl():
         self.apply_settings()
 
     class SETTINGS:
+        """Settings"""
         MAX_DIST_TOP = 20 # cm
         MAX_DIST_BOTTOM = 30 # cm
         MAX_VELOCITY = 500
@@ -30,6 +39,7 @@ class MotorControl():
         NUM_MICROSTEPS = 64
 
     def apply_settings(self):
+        """Apply the settings to the connected motors"""
         for motor in [self.motor_top, self.motor_bottom]:
             motor.drive_settings.max_current = 250
             motor.drive_settings.max_velocity = self.SETTINGS.MAX_VELOCITY
@@ -53,12 +63,16 @@ class MotorControl():
                 motor.AP.ReferenceSwitchSpeed, self.SETTINGS.MAX_VELOCITY_SEARCH)
 
     def microsteps_to_cm(self, dist):
+        """Transform microsteps to cm"""
         return (dist / self.SETTINGS.NUM_MICROSTEPS) * 0.01
 
     def cm_to_microsteps(self, dist):
+        """Transform cm to microsteps"""
         return dist * 10 * 100 * self.SETTINGS.NUM_MICROSTEPS
 
     def move_to_cm(self, dist, top=True):
+        """Move motor to dist. Select motor by
+        setting top to either True or False"""
         if top:
             assert dist <= self.SETTINGS.MAX_DIST_TOP,\
                 "Chosen distance is out of range!"
@@ -72,6 +86,7 @@ class MotorControl():
         motor.move_to(dist_micro_steps, self.SETTINGS.MAX_VELOCITY)
 
     def move_to_initial(self):
+        """Move motors to their initial positions"""
         # Drive to reference position
         for motor_id in [0, 1]:
             self.interface.send(13, 0, motor_id, 0)
@@ -86,5 +101,6 @@ class MotorControl():
         self.motor_bottom.actual_position = 0
 
     def position_reached(self):
+        """Check if motors reached the desired positions"""
         return self.motor_top.get_position_reached()\
             and self.motor_bottom.get_position_reached()
