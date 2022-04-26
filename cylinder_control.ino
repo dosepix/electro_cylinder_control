@@ -49,7 +49,6 @@ float get_cylinder_pos_perc() {
 void stop_cylinder() {
   analogWrite(PWMA_PIN, 0);
   cyl_moving = false;
-  Serial.println("DONE");
 }
 
 // == Loop ==
@@ -63,6 +62,12 @@ void loop() {
       break;
     } else if (command_input.substring(0, 2).equals("Z=")) {
       position_input = command_input.substring(2).toFloat();
+    } else if (command_input.equals(String("REACHED"))) {
+      if (cyl_moving) {
+        Serial.println("False");
+      } else {
+        Serial.println("True");
+      }
     } else {
       break;
     }
